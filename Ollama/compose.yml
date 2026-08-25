@@ -1,0 +1,47 @@
+services:
+  ollama-bee:
+    container_name: ollama-bee
+    hostname: ollama-bee
+    tty: true
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Опционально: кэшируем слои
+      #cache_from:
+      #  - ollama/ollama:latest
+    # Явно указываем root в контейнере (т.к. запускаем с sudo)
+    user: "root:root"
+    volumes:
+      # Храним модели локально в папке проекта
+      - ./ollama_data:/root/.ollama
+      # - ./ollama-configs:/etc/ollama/custom
+      - ./mnt:/mnt/host/
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      # Ограничиваем контекст до 16384б т.к. это физический предел DeepSeek coder 6.7B
+      #- OLLAMA_NUM_CTX=16384
+      # Держим модель в памяти 30 минут после запроса
+      - OLLAMA_KEEP_ALIVE=30m
+      - OLLAMA_NUM_THREAD=2
+      # запрещаем параллельную обработку от нескольких источников
+      - OLLAMA_NUM_PARALLEL=1  # Запросы встанут в очередь, скорость не упадет
+      - OLLAMA_MAX_LOADED_MODELS=1  # В памяти будет строго одна модель (спасет от OOM)
+    deploy:
+      resources:
+        # reservations:
+          # devices:
+            # - driver: nvidia
+            #   count: 1
+            #   capabilities: [gpu]
+        limits:
+          memory: 24G
+          cpus: '2.0'
+
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
