@@ -1,0 +1,74 @@
+services:
+  tfc_server:
+    hostname: tfc_server
+    container_name: tfc_server
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+      args:
+        TZ: Europe/Moscow
+        LANG: ru_RU.UTF-8
+    volumes:
+      # Прокидываю иксы, чтобы _установить_ сервер
+      #- /tmp/.X11-unix:/tmp/.X11-unix
+      #- $HOME/.Xauthority:$HOME/.Xauthority
+      - ./server_data:/app
+    environment:
+      TZ: Europe/Moscow
+      LANG: ru_RU.UTF-8
+      #XAUTHORITY: $HOME/.Xauthority
+      #DISPLAY: $DISPLAY
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    ports:
+      - "25565:25565"
+    extra_hosts:
+      - "host:host-gateway"
+    command: ["tail", "-f", "/dev/null"]
+    networks:
+      - home_network
+
+  tfc_client:
+    hostname: tfc_client
+    container_name: tfc_client
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+      args:
+            TZ: Europe/Moscow
+            LANG: ru_RU.UTF-8
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - $HOME/.Xauthority:$HOME/.Xauthority
+      - /run/user/1000/pulse/native:/run/user/1000/pulse/native
+      - ./client_data:/app
+    devices:
+      - "/dev/snd:/dev/snd"
+      - "/dev/input:/dev/input"
+      - "/dev/dri:/dev/dri"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+       TZ: Europe/Moscow
+       LANG: ru_RU.UTF-8
+       XAUTHORITY: $HOME/.Xauthority
+       DISPLAY: $DISPLAY
+       PULSE_SERVER: unix:/run/user/1000/pulse/native
+       MESA_LOADER_DRIVER_OVERRIDE: iris
+    extra_hosts:
+      - "host:host-gateway"
+    command: ["tail", "-f", "/dev/null"]
+    networks:
+      - home_network
+
+networks:
+  home_network:
+    # оверкилл. Вряд ли в одной сети будет одновременно два сервера mincraft, но как быструю шпаргалку оставляю.
+    #external: true
+#docker network create -d macvlan --subnet=10.47.3.0/24 --gateway=10.47.3.253 -o parent=enxe4b97ab0aff1 home_network
