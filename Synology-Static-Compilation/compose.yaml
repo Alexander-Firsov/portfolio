@@ -1,0 +1,39 @@
+services:
+  builder:
+    hostname: builder
+    container_name: builder
+    build:
+      context: .
+      dockerfile: Dockerfile.builder
+      target: builder_xauth  # <-- Цель 1: Чистый образ
+      args:
+            TZ: Europe/Moscow
+            LANG: ru_RU.UTF-8
+    volumes:
+      - ./opt:/opt
+    #environment:
+      # TZ: Europe/Moscow
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    extra_hosts:
+      - "host:host-gateway"
+    image: builder
+    command: ["tail", "-f", "/dev/null"]
+
+  # Этот сервис будет использовать образ С установленными X11-devel пакетами
+  builder_x11:
+    hostname: builder_x11
+    container_name: builder_x11
+    build:
+      context: .
+      dockerfile: Dockerfile.builder
+      target: builder_x11_env # <-- Цель 2: Образ с X11 пакетами
+    volumes:
+      - ./opt:/opt
+    extra_hosts:
+      - "host:host-gateway"
+    image: builder_x11 # <-- У этого сервиса будет другой образ
+    command: ["tail", "-f", "/dev/null"]
