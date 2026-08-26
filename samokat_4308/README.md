@@ -11,10 +11,10 @@
   * **0.90881** — итоговый скор на публичном лидерборде Kaggle (~80% тест-сета).
 
 ### 1. Подтверждение позиции на Лидерборде
-![Лидерборд Kaggle](./Screenshot_samokat_4308.png)
+![Лидерборд Kaggle](./Screenshot_samokat_4308_leaderboard.png)
 
 ### 2. Финальные выводы и этапы исследования из рабочего Notebook
-![Выводы работы](./Screenshot_samokat_4308_leaderboard.png)
+![Выводы работы](./Screenshot_samokat_4308.png)
 
 ---
 
